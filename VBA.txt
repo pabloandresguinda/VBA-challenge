@@ -1,0 +1,133 @@
+Sub analyzeStocksData()
+
+Dim ws As Worksheet
+
+Application.DisplayAlerts = False
+Application.ScreenUpdating = False
+
+For Each ws In ThisWorkbook.Worksheets
+
+ws.Activate
+
+Dim tickerLabel As String        
+Dim openingPrice As Double       
+Dim closingPrice As Double        
+Dim yearlyChange As Double      
+Dim percentChange As Double      
+Dim totalVolume As Double        
+Dim summaryTableRow As Integer   
+Dim greatestIncrease As Double   
+Dim greatestDecrease As Double    
+Dim greatestVolume As Double      
+
+tickerLabel = ""
+totalVolume = 0
+summaryTableRow = 2     
+
+greatestIncrease = Cells(2, 11)
+greatestDecrease = Cells(2, 11)
+greatestVolume = Cells(2, 12)
+
+    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+        
+        Range("I1") = "Ticker"
+        Range("J1") = "Yearly Change"
+        Range("K1") = "Percent Change"
+        Range("L1") = "Total Stock Volume"
+
+        Range("O2") = "Greatest % Increase"
+        Range("O3") = "Greatest % Decrease"
+        Range("O4") = "Greatest Total"
+        Range("P1") = "Ticker"
+        Range("Q1") = "Value"
+        
+        Columns("K:K").NumberFormat = "0.00%"
+
+        For i = 2 To lastRow 'Iterate through the dataset
+
+            If Cells(i - 1, 1).Value <> Cells(i, 1).Value Then
+                openingPrice = Cells(i, 3)
+
+            ElseIf Cells(i, 1).Value <> Cells(i + 1, 1).Value Then
+
+                tickerLabel = Cells(i, 1).Value
+
+                closingPrice = Cells(i, 6).Value
+
+                totalVolume = totalVolume + Cells(i, 7).Value
+
+                yearlyChange = closingPrice - openingPrice
+
+                On Error Resume Next
+
+                percentChange = (yearlyChange / openingPrice)
+
+                Range("I" & summaryTableRow).Value = tickerLabel
+
+                Range("J" & summaryTableRow).Value = yearlyChange
+
+                Range("K" & summaryTableRow).Value = percentChange
+
+                Range("L" & summaryTableRow).Value = totalVolume
+
+                summaryTableRow = summaryTableRow + 1
+
+                totalVolume = 0
+
+
+                Else
+
+                totalVolume = totalVolume + Cells(i, 7).Value
+
+
+                End If
+
+        Next i 
+
+  
+    lastSummaryRow = Cells(Rows.Count, 10).End(xlUp).Row
+
+    For j = 2 To lastSummaryRow
+    
+            If Cells(j, 10) >= 0 Then
+                Cells(j, 10).Interior.ColorIndex = 4
+      
+            ElseIf Cells(j, 10) < 0 Then
+                Cells(j, 10).Interior.ColorIndex = 3
+       
+            End If
+
+            If Cells(j, 11) > greatestIncrease Then
+                greatestIncrease = Cells(j, 11)
+                Cells(2, 17) = greatestIncrease
+                Cells(2, 17).NumberFormat = "0.00%"
+                Cells(2, 16) = Cells(j, 9)
+       
+            End If
+  
+            If Cells(j, 11) < greatestDecrease Then
+                greatestDecrease = Cells(j, 11)
+                Cells(3, 17) = greatestDecrease
+                Cells(3, 17).NumberFormat = "0.00%"
+                Cells(3, 16) = Cells(j, 9)
+      
+            End If
+
+            If Cells(j, 12) > greatestVolume Then
+                greatestVolume = Cells(j, 12)
+                Cells(4, 17) = greatestVolume
+                Cells(4, 17).NumberFormat = "#,###"
+                Cells(4, 16) = Cells(j, 9)
+       
+            End If
+
+     Next j
+
+            Columns("I:Q").AutoFit
+
+Next ws
+
+Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+
+End Sub
